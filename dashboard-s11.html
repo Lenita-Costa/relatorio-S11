@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard Sprint S11 — Fenasbac TI</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0D1117; --bg2:#161B22; --bg3:#21262D; --bord:#30363D;
+  --text:#E6EDF3; --muted:#8B949E;
+  --blue:#0225EB; --cyan:#02FFFF; --dark:#002060;
+  --green:#2EA043; --yellow:#D29922; --red:#F85149; --purple:#8957E5;
+  --gray:#484F58; --font:'Exo 2',sans-serif; --mono:'IBM Plex Mono',monospace;
+  --day:24px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;}
+
+.hdr{background:var(--dark);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--blue);}
+.hdr-l{display:flex;flex-direction:column;gap:2px;}
+.hdr-brand{font-size:10px;color:var(--cyan);font-weight:600;letter-spacing:1.5px;text-transform:uppercase;}
+.hdr-title{font-size:18px;font-weight:600;color:#fff;}
+.hdr-sub{font-size:11px;color:rgba(255,255,255,0.55);}
+
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--bord);background:var(--bg2);padding:0 24px;}
+.tab{padding:10px 18px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap;}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+.tab:hover:not(.active){color:var(--text);}
+.panel{display:none;} .panel.active{display:block;}
+
+/* KPIs */
+.kpis{display:flex;gap:12px;padding:20px 24px;flex-wrap:wrap;}
+.kpi{background:var(--bg2);border:1px solid var(--bord);border-radius:8px;padding:16px 20px;min-width:120px;flex:1;}
+.kpi-val{font-size:28px;font-weight:600;color:var(--cyan);font-family:var(--mono);}
+.kpi-label{font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.5px;}
+.kpi.ok .kpi-val{color:var(--green);}
+.kpi.warn .kpi-val{color:var(--yellow);}
+.kpi.danger .kpi-val{color:var(--red);}
+
+/* Charts */
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 24px 20px;}
+.chart-card{background:var(--bg2);border:1px solid var(--bord);border-radius:8px;padding:16px;}
+.chart-title{font-size:12px;font-weight:600;color:var(--cyan);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;}
+.stack-chart{display:flex;flex-direction:column;gap:7px;}
+.stack-row{display:flex;align-items:center;gap:8px;}
+.stack-label{width:88px;font-size:10px;color:var(--muted);text-align:right;flex-shrink:0;}
+.stack-track{flex:1;display:flex;height:18px;border-radius:3px;overflow:hidden;}
+.stack-seg{height:100%;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:600;min-width:4px;}
+.bar-count{font-size:10px;color:var(--muted);flex-shrink:0;width:28px;text-align:right;}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+
+/* SDesk */
+.sdesk-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 24px 20px;}
+.sdesk-card{background:var(--bg2);border:1px solid var(--bord);border-radius:8px;padding:16px;}
+.sdesk-kpis{display:flex;gap:10px;margin-bottom:14px;}
+.sdesk-kpi{flex:1;background:var(--bg3);border-radius:6px;padding:10px 12px;text-align:center;}
+.sdesk-kpi-val{font-size:22px;font-weight:600;font-family:var(--mono);}
+.sdesk-kpi-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.ticket-list{display:flex;flex-direction:column;gap:5px;max-height:280px;overflow-y:auto;}
+.ticket{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:5px;background:var(--bg3);}
+.ticket:hover{background:#2a2f38;}
+.t-key{font-family:var(--mono);font-size:9px;color:var(--muted);width:72px;flex-shrink:0;}
+.t-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.t-sum{font-size:10px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.t-owner{font-size:9px;color:var(--muted);flex-shrink:0;}
+.sla-badge{font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;background:var(--red);color:#fff;flex-shrink:0;}
+
+/* Gantt */
+.gantt-wrap{overflow-x:auto;padding:0 24px 24px;}
+.toolbar{display:flex;gap:6px;padding:0 24px 12px;flex-wrap:wrap;align-items:center;}
+.fbtn{background:var(--bg3);border:1px solid var(--bord);color:var(--muted);padding:4px 10px;border-radius:14px;cursor:pointer;font-size:11px;transition:all .15s;}
+.fbtn.active,.fbtn:hover{background:var(--blue);color:#fff;border-color:var(--blue);}
+.today-btn{background:var(--dark);border:1px solid var(--blue);color:var(--cyan);padding:4px 10px;border-radius:14px;cursor:pointer;font-size:11px;margin-left:auto;}
+.m-hdr{display:flex;border-bottom:1px solid var(--bord);}
+.m-lbl-col{width:100px;min-width:100px;position:sticky;left:0;background:var(--bg);z-index:11;border-right:1px solid var(--bord);}
+.m-cell{background:var(--bg2);text-align:center;font-size:10px;font-weight:600;color:var(--cyan);padding:4px 0;border-right:1px solid var(--bord);}
+.g-hdr{display:flex;position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--bord);}
+.g-lbl-col{width:100px;min-width:100px;padding:5px 8px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;position:sticky;left:0;background:var(--bg);z-index:11;border-right:1px solid var(--bord);}
+.g-days{display:flex;}
+.d-cell{width:var(--day);min-width:var(--day);text-align:center;font-size:9px;color:var(--muted);padding:3px 0;border-right:1px solid rgba(48,54,61,.4);}
+.d-cell.wknd{background:rgba(255,255,255,.015);}
+.d-cell.today{background:rgba(248,81,73,.15);color:var(--red);font-weight:600;}
+.g-row{display:flex;border-bottom:1px solid rgba(48,54,61,.3);}
+.g-row:hover{background:rgba(255,255,255,.02);}
+.g-row.hidden{display:none!important;}
+.row-lbl{width:100px;min-width:100px;padding:3px 8px;display:flex;align-items:center;gap:5px;position:sticky;left:0;background:var(--bg);z-index:5;border-right:1px solid var(--bord);}
+.rkey{font-family:var(--mono);font-size:8px;color:var(--muted);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:88px;}
+.row-tl{position:relative;height:22px;display:flex;align-items:center;}
+.dbg{position:absolute;top:0;bottom:0;}
+.dbg.wknd{background:rgba(255,255,255,.012);}
+.dbg.sprint{background:rgba(2,37,235,.05);}
+.dbg.today-col{background:rgba(248,81,73,.08);}
+.bar{position:absolute;height:12px;border-radius:2px;top:5px;opacity:.9;min-width:3px;}
+.bar.done{background:var(--green);}
+.bar.prog{background:var(--blue);}
+.bar.rev{background:var(--yellow);}
+.bar.pend{background:var(--gray);}
+.bar.carry{background:linear-gradient(90deg,var(--blue),var(--purple));}
+.ref-line{position:absolute;top:0;bottom:0;width:2px;z-index:8;}
+.ref-today{background:var(--red);opacity:.7;}
+.ref-end{background:var(--purple);opacity:.6;}
+.grp-row{display:flex;background:rgba(2,32,96,.4);}
+.grp-lbl{width:100px;min-width:100px;padding:4px 8px;font-size:11px;font-weight:600;color:var(--cyan);position:sticky;left:0;background:rgba(2,32,96,.4);z-index:5;border-right:1px solid var(--bord);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.grp-stats{font-size:9px;color:var(--muted);margin-left:4px;font-weight:400;}
+.grp-tl{flex:1;}
+
+/* Promises */
+.exec-sec{padding:0 24px 20px;}
+.sec-title{font-size:12px;font-weight:600;color:var(--cyan);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid var(--bord);}
+.dt{width:100%;border-collapse:collapse;}
+.dt th{background:var(--dark);color:#fff;padding:7px 12px;font-size:11px;text-align:left;font-weight:600;}
+.dt td{padding:6px 12px;font-size:11px;border-bottom:1px solid var(--bord);}
+.dt tr:nth-child(even) td{background:rgba(255,255,255,.02);}
+.dt tr:hover td{background:rgba(2,37,235,.07);}
+.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:700;}
+.bg{background:var(--green);color:#fff;} .by{background:var(--yellow);color:#000;} .br{background:var(--red);color:#fff;} .bb{background:var(--gray);color:#fff;}
+
+.footer{background:var(--dark);padding:10px 24px;font-size:10px;color:var(--muted);border-top:1px solid var(--bord);display:flex;justify-content:space-between;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-l">
+    <div class="hdr-brand">Fenasbac TI</div>
+    <div class="hdr-title">Dashboard Sprint S11</div>
+    <div class="hdr-sub">25/05/2026 → 05/06/2026 &nbsp;·&nbsp; 121 issues (100 sprint + 21 SDesk) &nbsp;·&nbsp; 05/06/2026</div>
+  </div>
+</div>
+
+<!-- BARRA DE ALERTAS -->
+<div id="alert-bar" style="background:#0D1117;border-bottom:1px solid #30363D;padding:10px 24px;">
+  <div style="display:flex;align-items:center;gap:14px;">
+    <span style="font-size:9px;color:#8B949E;text-transform:uppercase;letter-spacing:.8px;flex-shrink:0;">Go-live Clube F</span>
+    <span style="font-size:20px;font-weight:700;color:#02FFFF;font-family:'IBM Plex Mono',monospace;letter-spacing:2px;">11 JUN 2026</span>
+    <span style="font-size:10px;color:#8B949E;">confirmado em reunião 02/06 com Urbis</span>
+  </div>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="showTab('visao')">📊 Visão Geral</div>
+  <div class="tab" onclick="showTab('sdesk')">🎫 SDesk</div>
+  <div class="tab" onclick="showTab('gantt')">📅 Gantt</div>
+  <div class="tab" onclick="showTab('s12')">🎯 S12</div>
+</div>
+
+<!-- ══ VISÃO GERAL ══ -->
+<div class="panel active" id="panel-visao">
+<div class="kpis">
+  <div class="kpi ok"><div class="kpi-val">42</div><div class="kpi-label">Concluídos (sprint)</div></div>
+  <div class="kpi warn"><div class="kpi-val">42%</div><div class="kpi-label">Taxa conclusão</div></div>
+  <div class="kpi"><div class="kpi-val">7</div><div class="kpi-label">Em Andamento</div></div>
+  <div class="kpi warn"><div class="kpi-val">24</div><div class="kpi-label">Em Análise</div></div>
+  <div class="kpi danger"><div class="kpi-val">27</div><div class="kpi-label">Pendentes</div></div>
+  <div class="kpi ok"><div class="kpi-val">9</div><div class="kpi-label">SDesk Resolvidos</div></div>
+</div>
+
+<div class="charts">
+  <div class="chart-card" style="grid-column:1/-1">
+    <div class="chart-title">Issues por Projeto — Distribuição de Status</div>
+    <div class="stack-chart" id="proj-chart"></div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#2EA043"></div>Concluído</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#0225EB"></div>Em Andamento</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#D29922"></div>Em Análise</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#484F58"></div>Pendente</div>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">Distribuição de Status (Sprint)</div>
+    <div style="display:flex;align-items:center;gap:20px;justify-content:center;margin-top:8px;">
+      <canvas id="donut" width="150" height="150"></canvas>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="leg-item"><div class="leg-dot" style="background:#2EA043;width:12px;height:12px;border-radius:2px;"></div><span style="font-size:12px">Concluídos: <strong style="color:#E6EDF3">42</strong> (42%)</span></div>
+        <div class="leg-item"><div class="leg-dot" style="background:#0225EB;width:12px;height:12px;border-radius:2px;"></div><span style="font-size:12px">Em Andamento: <strong style="color:#E6EDF3">7</strong> (7%)</span></div>
+        <div class="leg-item"><div class="leg-dot" style="background:#D29922;width:12px;height:12px;border-radius:2px;"></div><span style="font-size:12px">Em Análise: <strong style="color:#E6EDF3">24</strong> (24%)</span></div>
+        <div class="leg-item"><div class="leg-dot" style="background:#484F58;width:12px;height:12px;border-radius:2px;"></div><span style="font-size:12px">Pendentes: <strong style="color:#E6EDF3">27</strong> (27%)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">Taxa de Conclusão por Projeto</div>
+    <div class="stack-chart" id="taxa-chart"></div>
+  </div>
+</div>
+</div>
+
+<!-- ══ SDESK ══ -->
+<div class="panel" id="panel-sdesk">
+<div class="kpis" style="padding-bottom:12px;">
+  <div class="kpi ok"><div class="kpi-val">9</div><div class="kpi-label">Resolvidos no período</div></div>
+  <div class="kpi"><div class="kpi-val">3</div><div class="kpi-label">Em Andamento</div></div>
+  <div class="kpi danger"><div class="kpi-val">9</div><div class="kpi-label">Pendentes</div></div>
+  <div class="kpi warn"><div class="kpi-val">2</div><div class="kpi-label">⚠ Fora do SLA</div></div>
+  <div class="kpi"><div class="kpi-val">21</div><div class="kpi-label">Total no período</div></div>
+</div>
+
+<div class="sdesk-grid">
+  <div class="sdesk-card">
+    <div class="chart-title">✅ Resolvidos</div>
+    <div class="ticket-list">
+      <div class="ticket"><span class="t-key">SDESK-134</span><span class="t-dot" style="background:#2EA043"></span><span class="t-sum">Atualização SISFENASBAC (hotfix produção)</span><span class="t-owner">Jorge</span></div>
+      <div class="ticket"><span class="t-key">SDESK-137</span><span class="t-dot" style="background:#2EA043"></span><span class="t-sum">Trocar formulário de contato</span><span class="t-owner">Matheus</span></div>
+      <div class="ticket"><span class="t-key">SDESK-129</span><span class="t-dot" style="background:#2EA043"></span><span class="t-sum">Copies patrocínio — 4 plataformas</span><span class="t-owner">Matheus</span></div>
+      <div class="ticket"><span class="t-key">SDESK-136</span><span class="t-dot" style="background:#2EA043"></span><span class="t-sum">Inativar e-mail da Maria</span><span class="t-owner">Lenita</span></div>
+      <div class="ticket"><span class="t-key">SDESK-150</span><span class="t-dot" style="background:#2EA043"></span><span class="t-sum">Reset de senha ramal</span><span class="t-owner">Jorge</span></div>
+      <div class="ticket"><span class="t-key">SDESK-151</span><span class="t-dot" style="background:#2EA043"></span><span class="t-sum">Ajuste mensagem telefone 0800</span><span class="t-owner">Jorge</span></div>
+      <div class="ticket"><span class="t-key">SDESK-152</span><span class="t-dot" style="background:#2EA043"></span><span class="t-sum">Problema de impressão</span><span class="t-owner">Lenita</span></div>
+      <div class="ticket"><span class="t-key">SDESK-120</span><span class="t-dot" style="background:#2EA043"></span><span class="t-sum">Excluir cadastro teste (GEP)</span><span class="t-owner">Lenita</span></div>
+      <div class="ticket"><span class="t-key">SDESK-124</span><span class="t-dot" style="background:#2EA043"></span><span class="t-sum">Problema de scanner</span><span class="t-owner">Jorge</span></div>
+    </div>
+  </div>
+
+  <div class="sdesk-card">
+    <div class="chart-title">🔄 Em Andamento + Onboarding</div>
+    <div class="ticket-list">
+      <div class="ticket"><span class="t-key">SDESK-141</span><span class="t-dot" style="background:#0225EB"></span><span class="t-sum">Onboarding TI — novo colaborador (SP)</span><span class="t-owner">Lenita</span></div>
+      <div class="ticket" style="padding-left:20px;opacity:.75;font-size:10px;"><span class="t-key" style="font-size:8px">→ GWS, Slack, NordPass, Acessos, Equip., Onb., Validar</span><span class="t-sum">8 subtarefas em execução</span></div>
+      <div class="ticket"><span class="t-key">SDESK-138</span><span class="t-dot" style="background:#0225EB"></span><span class="t-sum">Convite guest users Microsoft Teams</span><span class="t-owner">Jorge</span></div>
+      <div class="ticket"><span class="t-key">SDESK-139</span><span class="t-dot" style="background:#0225EB"></span><span class="t-sum">Esqueci senha Nordpass</span><span class="t-owner">Jorge</span></div>
+    </div>
+    <div style="margin-top:16px;">
+    <div class="chart-title">⏸ Pendentes</div>
+    <div class="ticket-list">
+      <div class="ticket"><span class="t-key" style="color:#F85149;font-weight:700">SDESK-122</span><span class="t-dot" style="background:#F85149"></span><span class="t-sum">Solicitação fone de ouvido</span><span class="sla-badge">18d</span></div>
+      <div class="ticket"><span class="t-key" style="color:#F85149;font-weight:700">SDESK-128</span><span class="t-dot" style="background:#F85149"></span><span class="t-sum">Computador com lentidão</span><span class="sla-badge">10d</span></div>
+      <div class="ticket"><span class="t-key">SDESK-133</span><span class="t-dot" style="background:#484F58"></span><span class="t-sum">Instalação Office — financeiro</span><span class="t-owner">Jorge</span></div>
+      <div class="ticket"><span class="t-key">SDESK-126</span><span class="t-dot" style="background:#484F58"></span><span class="t-sum">Refinamento formulário Fenasbac ID</span><span class="t-owner">Matheus</span></div>
+      <div class="ticket"><span class="t-key">SDESK-153</span><span class="t-dot" style="background:#484F58"></span><span class="t-sum">Trocar e-mail redirecionamento Clube F</span><span class="t-owner">Matheus</span></div>
+      <div class="ticket"><span class="t-key">SDESK-154</span><span class="t-dot" style="background:#484F58"></span><span class="t-sum">Ajuste no arquivo Contratos</span><span class="t-owner">Lenita</span></div>
+      <div class="ticket"><span class="t-key">SDESK-155</span><span class="t-dot" style="background:#484F58"></span><span class="t-sum">Documentos GEP para download PDF</span><span class="t-owner">Alân</span></div>
+      <div class="ticket"><span class="t-key">SDESK-156</span><span class="t-dot" style="background:#484F58"></span><span class="t-sum">Atualizar Política de Privacidade</span><span class="t-owner">Matheus</span></div>
+      <div class="ticket"><span class="t-key">SDESK-157</span><span class="t-dot" style="background:#484F58"></span><span class="t-sum">Alteração módulo GEP — embed RD Station</span><span class="t-owner">Lenita</span></div>
+    </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ GANTT ══ -->
+<div class="panel" id="panel-gantt">
+<div class="kpis" style="padding-bottom:8px;">
+  <div class="kpi ok"><div class="kpi-val">42</div><div class="kpi-label">Concluídos</div></div>
+  <div class="kpi"><div class="kpi-val">7</div><div class="kpi-label">Em Andamento</div></div>
+  <div class="kpi warn"><div class="kpi-val">24</div><div class="kpi-label">Em Análise</div></div>
+  <div class="kpi danger"><div class="kpi-val">27</div><div class="kpi-label">Pendentes</div></div>
+  <div class="kpi"><div class="kpi-val">11/10</div><div class="kpi-label">Go-live Clube F</div></div>
+</div>
+<div class="toolbar">
+  <button class="fbtn active" onclick="setF('all',this)">Todos</button>
+  <button class="fbtn" onclick="setF('PROC',this)">PROC</button>
+  <button class="fbtn" onclick="setF('CONECTA',this)">CONECTA</button>
+  <button class="fbtn" onclick="setF('FENASBR',this)">FENASBR</button>
+  <button class="fbtn" onclick="setF('STRAPI',this)">STRAPI</button>
+  <button class="fbtn" onclick="setF('SISFENAS',this)">SISFENAS</button>
+  <button class="fbtn" onclick="setF('TECH',this)">TECH</button>
+  <button class="fbtn" onclick="setF('SDESK',this)">SDESK</button>
+  <button class="fbtn" onclick="setF('done',this)">✅ Concluídos</button>
+  <button class="fbtn" onclick="setF('active',this)">🔄 Ativos</button>
+  <button class="fbtn" onclick="setF('carry',this)">→ S12</button>
+  <button class="today-btn" onclick="scrollToToday()">📍 Hoje</button>
+</div>
+<div class="gantt-wrap" id="gantt-wrap">
+  <div id="gantt-container"></div>
+</div>
+</div>
+
+<!-- ══ S12 ══ -->
+<div class="panel" id="panel-s12">
+<div class="exec-sec" style="padding-top:20px;">
+  <div class="sec-title">Carryover Priorizado — Sprint S12</div>
+  <table class="dt">
+    <tr><th>#</th><th>Grupo</th><th>Descrição</th><th>Owner</th><th>Prior.</th></tr>
+    <tr><td>1</td><td style="font-family:var(--mono);font-size:10px">CONECTA-46/45/43</td><td>Go-live Clube F — validação, homologação, publicação (nova data: 11/10)</td><td>Wesley / Alân</td><td><span class="badge br">Alta</span></td></tr>
+    <tr><td>2</td><td style="font-family:var(--mono);font-size:10px">FENASBR (24 issues)</td><td>Integração Clube F no site — área logada + API aceites + banners</td><td>Wesley + Matheus</td><td><span class="badge br">Alta</span></td></tr>
+    <tr><td>3</td><td style="font-family:var(--mono);font-size:10px">SISFENAS-22 a 25</td><td>Fluxos de adesão Clube F no SisFenasbac</td><td>Wesley</td><td><span class="badge br">Alta</span></td></tr>
+    <tr><td>4</td><td style="font-family:var(--mono);font-size:10px">CONECTA-40</td><td>Base de usuários — escalação ASBAC BH + retorno SP/CWB</td><td>Wesley + Lenita</td><td><span class="badge by">Média</span></td></tr>
+    <tr><td>5</td><td style="font-family:var(--mono);font-size:10px">PROC-211</td><td>Enviar Proposta Estruturação TI ao Rodrigoh</td><td>Lenita</td><td><span class="badge by">Média</span></td></tr>
+    <tr><td>6</td><td style="font-family:var(--mono);font-size:10px">FENASBR-142</td><td>Página Clube F — cobrar layouts da Comunicação (Bruno)</td><td>Matheus + Bruno</td><td><span class="badge by">Média</span></td></tr>
+    <tr><td>7</td><td style="font-family:var(--mono);font-size:10px">STRAPI (7)</td><td>Issues estruturais Strapi — Fenasbac.io e GEP como prioridade</td><td>Alân</td><td><span class="badge bb">Normal</span></td></tr>
+    <tr><td>8</td><td style="font-family:var(--mono);font-size:10px">STRAPI-PPv (10)</td><td>Política de Privacidade — 10 sites (compliance)</td><td>Matheus</td><td><span class="badge bb">Normal</span></td></tr>
+    <tr><td>9</td><td style="font-family:var(--mono);font-size:10px">SDESK pendentes</td><td>SDESK-122/128 (SLA estourado), 153, 155, 156 como prioridade</td><td>Jorge / Matheus</td><td><span class="badge bb">Normal</span></td></tr>
+  </table>
+</div>
+<div class="exec-sec">
+  <div class="sec-title">Promessas para S12</div>
+  <table class="dt">
+    <tr><th>#</th><th>Compromisso</th><th>Owner</th><th>Prazo</th></tr>
+    <tr><td>1</td><td><strong>Concluir go-live técnico do Clube F (nova data: 11/10)</strong></td><td>Wesley / Alân</td><td>Início S12</td></tr>
+    <tr><td>2</td><td>Escalação formal ASBAC BH — canal institucional via Thiago</td><td>Lenita</td><td>Semana 1</td></tr>
+    <tr><td>3</td><td>Cobrar Bruno (Comunicação) — layouts FENASBR-142 e CONECTA-43</td><td>Lenita / Alân</td><td>Dia 1 S12</td></tr>
+    <tr><td>4</td><td>Alinhar Rodrigoh sobre nova data 11/10 (ação ata 02/06 — Alân)</td><td>Alân</td><td>Semana 1</td></tr>
+    <tr><td>5</td><td>Enviar Proposta Estruturação TI ao Rodrigoh (PROC-211)</td><td>Lenita</td><td>Dia 1 S12</td></tr>
+    <tr><td>6</td><td>Redistribuir issues integração Clube F — pair review ou delegação</td><td>Wesley + Lenita</td><td>Planning S12</td></tr>
+    <tr><td>7</td><td>Resolver SDesk fora de SLA: SDESK-122 (18d) e SDESK-128 (10d)</td><td>Jorge</td><td>Semana 1</td></tr>
+    <tr><td>8</td><td>Planning S12: máx. 10 issues/dev antes de iniciar sprint</td><td>Lenita</td><td>Planning S12</td></tr>
+  </table>
+</div>
+</div>
+
+<div class="footer">
+  <span>SBS Quadra 02, Bloco A, Ed. Casa de São Paulo, 7º andar — Brasília/DF</span>
+  <span>Fenasbac TI · Sprint S11 · 05/06/2026 · Jira + Slack + Gmail</span>
+</div>
+
+<script>
+const ISSUES = [{"key": "PROC-211", "project": "PROC", "status": "Em andamento", "assignee": "Lenita Martins", "summary": "Compartilhar documento de Proposta de Estruturação TI -", "created": "2026-05-21", "due": "2026-06-12"}, {"key": "FENASHUB-26", "project": "FENASHUB", "status": "Em andamento", "assignee": "Wesley Aquiles", "summary": "Verificar Roles", "created": "2026-03-13", "due": "2026-06-19"}, {"key": "FENASBR-142", "project": "FENASBR", "status": "Em andamento", "assignee": "Matheus Douglas Alves Pinto", "summary": "Desenvolvimento e Publicação da Página CLUBE F", "created": "2026-05-27", "due": "2026-06-08"}, {"key": "CONECTA-46", "project": "CONECTA", "status": "Em andamento", "assignee": "Wesley Aquiles", "summary": "Executar go-live do Clube F", "created": "2026-05-14", "due": "2026-06-11"}, {"key": "CONECTA-45", "project": "CONECTA", "status": "Em andamento", "assignee": "Alân Domingues", "summary": "Realizar validação técnica pré-go-live", "created": "2026-05-14", "due": "2026-06-08"}, {"key": "CONECTA-43", "project": "CONECTA", "status": "Em andamento", "assignee": "Alân Domingues", "summary": "Homologar jornada do usuário", "created": "2026-05-14", "due": "2026-06-09"}, {"key": "CONECTA-40", "project": "CONECTA", "status": "Em andamento", "assignee": "Wesley Aquiles", "summary": "Estruturar base inicial de usuários do Clube F", "created": "2026-05-14", "due": "2026-06-09"}, {"key": "STRAPI-36", "project": "STRAPI", "status": "Tarefas pendentes", "assignee": "Matheus Douglas Alves Pinto", "summary": "Atualizar Política de Privacidade – GEP", "created": "2026-06-05", "due": "2026-06-19"}, {"key": "STRAPI-35", "project": "STRAPI", "status": "Tarefas pendentes", "assignee": "Matheus Douglas Alves Pinto", "summary": "Atualizar Política de Privacidade – Fenasbac.io", "created": "2026-06-05", "due": "2026-06-19"}, {"key": "STRAPI-34", "project": "STRAPI", "status": "Tarefas pendentes", "assignee": "Matheus Douglas Alves Pinto", "summary": "Atualizar Política de Privacidade – Lift", "created": "2026-06-05", "due": "2026-06-19"}, {"key": "STRAPI-33", "project": "STRAPI", "status": "Tarefas pendentes", "assignee": "Matheus Douglas Alves Pinto", "summary": "Atualizar Política de Privacidade – Nexus", "created": "2026-06-05", "due": "2026-06-19"}, {"key": "STRAPI-32", "project": "STRAPI", "status": "Tarefas pendentes", "assignee": "Matheus Douglas Alves Pinto", "summary": "Atualizar Política de Privacidade – Next Impact", "created": "2026-06-05", "due": "2026-06-19"}, {"key": "STRAPI-31", "project": "STRAPI", "status": "Tarefas pendentes", "assignee": "Matheus Douglas Alves Pinto", "summary": "Atualizar Política de Privacidade – Next", "created": "2026-06-05", "due": "2026-06-19"}, {"key": "STRAPI-30", "project": "STRAPI", "status": "Tarefas pendentes", "assignee": "Matheus Douglas Alves Pinto", "summary": "Atualizar Política de Privacidade – 3F", "created": "2026-06-05", "due": "2026-06-19"}, {"key": "STRAPI-29", "project": "STRAPI", "status": "Tarefas pendentes", "assignee": "Matheus Douglas Alves Pinto", "summary": "Atualizar Política de Privacidade – Syncoop", "created": "2026-06-05", "due": "2026-06-19"}, {"key": "STRAPI-28", "project": "STRAPI", "status": "Tarefas pendentes", "assignee": "Matheus Douglas Alves Pinto", "summary": "Atualizar Política de Privacidade – Regulation Rocks", "created": "2026-06-05", "due": "2026-06-19"}, {"key": "STRAPI-27", "project": "STRAPI", "status": "Tarefas pendentes", "assignee": "Matheus Douglas Alves Pinto", "summary": "Atualizar Política de Privacidade – Tilt The Future", "created": "2026-06-05", "due": "2026-06-19"}, {"key": "STRAPI-25", "project": "STRAPI", "status": "Tarefas pendentes", "assignee": "Alân Domingues", "summary": "[Lift][Strapi] Estruturação de conteúdo e integração co", "created": "2026-05-03", "due": "2026-06-26"}, {"key": "STRAPI-24", "project": "STRAPI", "status": "Tarefas pendentes", "assignee": "Alân Domingues", "summary": "[Impact][Strapi] Adequação da estrutura e componentes", "created": "2026-05-03", "due": "2026-06-19"}, {"key": "STRAPI-23", "project": "STRAPI", "status": "Tarefas pendentes", "assignee": "Alân Domingues", "summary": "[Nexus][Strapi] Estruturação de conteúdo e integração", "created": "2026-05-03", "due": "2026-06-12"}, {"key": "STRAPI-22", "project": "STRAPI", "status": "Tarefas pendentes", "assignee": "Sem responsável", "summary": "[Fenasbac.br][Strapi] Estruturação e padronização de co", "created": "2026-05-03", "due": "2026-06-12"}, {"key": "STRAPI-21", "project": "STRAPI", "status": "Tarefas pendentes", "assignee": "Alân Domingues", "summary": "[Fenasbac.io][Strapi] Revisão e adequação da estrutura ", "created": "2026-05-03", "due": "2026-06-12"}, {"key": "STRAPI-20", "project": "STRAPI", "status": "Tarefas pendentes", "assignee": "Alân Domingues", "summary": "[GEP][Strapi] Adequação da estrutura para o site do GEP", "created": "2026-05-03", "due": "2026-06-12"}, {"key": "STRAPI-19", "project": "STRAPI", "status": "Tarefas pendentes", "assignee": "Alân Domingues", "summary": "[Next][Strapi] Ajustes de estrutura e integração", "created": "2026-05-03", "due": "2026-06-12"}, {"key": "PROC-215", "project": "PROC", "status": "Tarefas pendentes", "assignee": "Alân Domingues", "summary": "Liberar acesso ao dashboard dos conselheiros para a Sar", "created": "2026-05-26", "due": "2026-06-08"}, {"key": "PROC-213", "project": "PROC", "status": "Tarefas pendentes", "assignee": "Lenita Martins", "summary": "Criar o fluxo de implementação do gerenciador de senhas", "created": "2026-05-22", "due": "2026-06-22"}, {"key": "PROC-206", "project": "PROC", "status": "Tarefas pendentes", "assignee": "Lenita Martins", "summary": "Coordenar preparação para go-live", "created": "2026-05-14", "due": "2026-06-09"}, {"key": "PROC-196", "project": "PROC", "status": "Tarefas pendentes", "assignee": "Lenita Martins", "summary": "Coordenação e Governança da Implantação — Clube F (Urbi", "created": "2026-05-14", "due": "2026-06-11"}, {"key": "PROC-174", "project": "PROC", "status": "Tarefas pendentes", "assignee": "Lenita Martins", "summary": "Formalizar e publicar o fluxo", "created": "2026-04-24", "due": "2026-06-12"}, {"key": "PROC-173", "project": "PROC", "status": "Tarefas pendentes", "assignee": "Lenita Martins", "summary": "Alinhar fluxo com áreas demandantes", "created": "2026-04-24", "due": "2026-06-19"}, {"key": "PROC-164", "project": "PROC", "status": "Tarefas pendentes", "assignee": "Lenita Martins", "summary": "Estruturação do Fluxo de Demandas de Sites (TI + MKT)", "created": "2026-04-24", "due": "2026-06-12"}, {"key": "FENASBR-178", "project": "FENASBR", "status": "Tarefas pendentes", "assignee": "Matheus Douglas Alves Pinto", "summary": "Atualizar a copy para e-mail transacional de boas-vinda", "created": "2026-06-05", "due": "2026-06-08"}, {"key": "FENASBR-176", "project": "FENASBR", "status": "Tarefas pendentes", "assignee": "Matheus Douglas Alves Pinto", "summary": "Ajustar e-mail de recebimento dos cadastros do Clube F", "created": "2026-06-05", "due": "2026-06-08"}, {"key": "FENASBR-175", "project": "FENASBR", "status": "Tarefas pendentes", "assignee": "Matheus Douglas Alves Pinto", "summary": "Incluir a Política de Privacidade na página do Clube F", "created": "2026-06-05", "due": "2026-06-08"}, {"key": "TILT-40", "project": "TILT", "status": "Concluído", "assignee": "Matheus Douglas Alves Pinto", "summary": "Atualização de copy na seção de patrocínio – Tilt the F", "created": "2026-05-26", "due": "2026-05-29"}, {"key": "TECH-46", "project": "TECH", "status": "Concluído", "assignee": "jorge", "summary": "Solicitar orçamento de capinhas de proteção para os cel", "created": "2026-05-26", "due": "2026-05-28"}, {"key": "TECH-43", "project": "TECH", "status": "Concluído", "assignee": "jorge", "summary": "Instalar slack na máquina do Tadeu", "created": "2026-05-22", "due": "2026-05-25"}, {"key": "TECH-41", "project": "TECH", "status": "Concluído", "assignee": "jorge", "summary": "Orçar máquina para a Ana", "created": "2026-05-06", "due": "2026-05-29"}, {"key": "TECH-39", "project": "TECH", "status": "Concluído", "assignee": "jorge", "summary": "Realizar compra", "created": "2026-04-30", "due": "2026-05-29"}, {"key": "TECH-38", "project": "TECH", "status": "Concluído", "assignee": "Lenita Martins", "summary": "Submeter para aprovação", "created": "2026-04-30", "due": "2026-05-29"}, {"key": "TECH-37", "project": "TECH", "status": "Concluído", "assignee": "jorge", "summary": "Cotar fornecedores", "created": "2026-04-30", "due": "2026-05-15"}, {"key": "TECH-36", "project": "TECH", "status": "Concluído", "assignee": "jorge", "summary": "Consolidar lista final", "created": "2026-04-30", "due": "2026-05-29"}, {"key": "TECH-35", "project": "TECH", "status": "Concluído", "assignee": "jorge", "summary": "Compra de materiais recorrentes de TI (estoque e reposi", "created": "2026-04-30", "due": "2026-05-14"}, {"key": "SYNCOOP-1", "project": "SYNCOOP", "status": "Concluído", "assignee": "Matheus Douglas Alves Pinto", "summary": "Atualização de copy na seção de patrocínio – Syncoop", "created": "2026-05-26", "due": "2026-05-29"}, {"key": "STRAPI-18", "project": "STRAPI", "status": "Concluído", "assignee": "Alân Domingues", "summary": "[Syncoop][Strapi] Ajustes de estrutura e integração", "created": "2026-05-03", "due": "2026-06-05"}, {"key": "STRAPI-17", "project": "STRAPI", "status": "Concluído", "assignee": "Alân Domingues", "summary": "[RR][Strapi] Estruturação e padronização de conteúdo", "created": "2026-05-03", "due": "2026-06-05"}, {"key": "SRR-2", "project": "SRR", "status": "Concluído", "assignee": "Matheus Douglas Alves Pinto", "summary": "Atualização de copy na seção de patrocínio – Regulation", "created": "2026-05-26", "due": "2026-05-29"}, {"key": "SISFENAS-20", "project": "SISFENAS", "status": "Concluído", "assignee": "jorge", "summary": "Atualizar base de cadastro do SisFenasbac com registros", "created": "2026-06-01", "due": "2026-06-01"}, {"key": "SISFENAS-19", "project": "SISFENAS", "status": "Concluído", "assignee": "Wesley Aquiles", "summary": "Implementar bloqueio de acesso à API do SisFenasbac uti", "created": "2026-05-27", "due": "2026-05-27"}, {"key": "S3F-2", "project": "S3F", "status": "Concluído", "assignee": "Matheus Douglas Alves Pinto", "summary": "Atualização de copy na seção de patrocínio – 3F", "created": "2026-05-26", "due": "2026-05-29"}, {"key": "PROC-212", "project": "PROC", "status": "Concluído", "assignee": "Lenita Martins", "summary": "Conversão de usuários convidados multicanal para membro", "created": "2026-05-21", "due": "2026-05-29"}, {"key": "PROC-207", "project": "PROC", "status": "Concluído", "assignee": "Lenita Martins", "summary": "Criar acesso para equipe: Solicitar e configurar o logi", "created": "2026-05-18", "due": "2026-05-29"}, {"key": "PROC-203", "project": "PROC", "status": "Concluído", "assignee": "Lenita Martins", "summary": "Acompanhar customização inicial do Clube F", "created": "2026-05-14", "due": "2026-05-29"}, {"key": "PROC-202", "project": "PROC", "status": "Concluído", "assignee": "Lenita Martins", "summary": "Coordenar estruturação da base inicial de usuários", "created": "2026-05-14", "due": "2026-06-05"}, {"key": "PROC-199", "project": "PROC", "status": "Concluído", "assignee": "Lenita Martins", "summary": "Agendar alinhamentos entre TI e Comunicação", "created": "2026-05-14", "due": "2026-05-29"}, {"key": "PROC-198", "project": "PROC", "status": "Concluído", "assignee": "Lenita Martins", "summary": "Agendar alinhamentos com a Urbis", "created": "2026-05-14", "due": "2026-05-29"}, {"key": "PROC-193", "project": "PROC", "status": "Concluído", "assignee": "Lenita Martins", "summary": "ASBAC Belo Horizonte", "created": "2026-04-24", "due": "2026-06-05"}, {"key": "PROC-192", "project": "PROC", "status": "Concluído", "assignee": "Lenita Martins", "summary": "ASBAC Belém", "created": "2026-04-24", "due": "2026-06-05"}, {"key": "PROC-191", "project": "PROC", "status": "Concluído", "assignee": "Lenita Martins", "summary": "ASBAC Curitiba", "created": "2026-04-24", "due": "2026-06-05"}, {"key": "PROC-190", "project": "PROC", "status": "Concluído", "assignee": "Lenita Martins", "summary": "ASBAC Fortaleza", "created": "2026-04-24", "due": "2026-06-05"}, {"key": "PROC-189", "project": "PROC", "status": "Concluído", "assignee": "Lenita Martins", "summary": "ASBAC Recife", "created": "2026-04-24", "due": "2026-05-29"}, {"key": "PROC-188", "project": "PROC", "status": "Concluído", "assignee": "Lenita Martins", "summary": "ASBAC São Paulo", "created": "2026-04-24", "due": "2026-06-05"}, {"key": "PROC-187", "project": "PROC", "status": "Concluído", "assignee": "Lenita Martins", "summary": "ASBAC Salvador", "created": "2026-04-24", "due": "2026-06-05"}, {"key": "PROC-186", "project": "PROC", "status": "Concluído", "assignee": "Lenita Martins", "summary": "ASBAC Porto Alegre", "created": "2026-04-24", "due": "2026-06-05"}, {"key": "PROC-185", "project": "PROC", "status": "Concluído", "assignee": "Lenita Martins", "summary": "Integração de Base de Dados: Comunicação - Regionais ", "created": "2026-04-24", "due": "2026-06-05"}, {"key": "FENASBR-159", "project": "FENASBR", "status": "Concluído", "assignee": "Lenita Martins", "summary": "Configurar subdomínio do clube f", "created": "2026-05-27", "due": "2026-06-01"}, {"key": "FAUTH-35", "project": "FAUTH", "status": "Concluído", "assignee": "Matheus Douglas Alves Pinto", "summary": "Ajustar responsividade", "created": "2026-06-01", "due": "2026-06-01"}, {"key": "CONECTA-44", "project": "CONECTA", "status": "Concluído", "assignee": "Wesley Aquiles", "summary": "Apoiar customização inicial do Clube F", "created": "2026-05-14", "due": "2026-06-09"}, {"key": "CONECTA-37", "project": "CONECTA", "status": "Concluído", "assignee": "Lenita Martins", "summary": "Realizar configuração DNS e SSL do Clube F", "created": "2026-05-14", "due": "2026-06-05"}, {"key": "CONECTA-36", "project": "CONECTA", "status": "Concluído", "assignee": "Wesley Aquiles", "summary": "Definir subdomínio oficial do Clube F", "created": "2026-05-14", "due": "2026-06-09"}, {"key": "CONECTA-34", "project": "CONECTA", "status": "Concluído", "assignee": "Wesley Aquiles", "summary": "Implantação e Integração Técnica — Clube F (Urbis)", "created": "2026-05-14", "due": "2026-06-09"}, {"key": "CONECTA-31", "project": "CONECTA", "status": "Concluído", "assignee": "Sem responsável", "summary": "Analisar e integrar base de dados da ASBAC Salvador", "created": "2026-05-07", "due": "2026-06-05"}, {"key": "CONECTA-24", "project": "CONECTA", "status": "Concluído", "assignee": "Alân Domingues", "summary": "Preparação para o ambiente de produção.", "created": "2026-03-14", "due": "2026-03-20"}, {"key": "CONECTA-23", "project": "CONECTA", "status": "Concluído", "assignee": "Wesley Aquiles", "summary": "Atualizar o dashboard", "created": "2026-02-24", "due": "2026-03-05"}, {"key": "CONECTA-20", "project": "CONECTA", "status": "Concluído", "assignee": "Wesley Aquiles", "summary": "Criar filtro de Situação de vida", "created": "2026-02-24", "due": "2026-03-03"}, {"key": "CONECTA-16", "project": "CONECTA", "status": "Concluído", "assignee": "Wesley Aquiles", "summary": "Desenvolvimento da API Conecta", "created": "2026-02-05", "due": "2026-02-20"}, {"key": "SISFENAS-25", "project": "SISFENAS", "status": "Em análise", "assignee": "Wesley Aquiles", "summary": "[C03] Criar formulário de solicitação de acesso para us", "created": "2026-06-01", "due": "2026-06-08"}, {"key": "SISFENAS-24", "project": "SISFENAS", "status": "Em análise", "assignee": "Wesley Aquiles", "summary": "[C02] Bloquear ativação do Clube F e exibir fluxo de re", "created": "2026-06-01", "due": "2026-06-08"}, {"key": "SISFENAS-23", "project": "SISFENAS", "status": "Em análise", "assignee": "Wesley Aquiles", "summary": "[C01] Consumir API de aceites e registrar opt-in do Clu", "created": "2026-06-01", "due": "2026-06-08"}, {"key": "SISFENAS-22", "project": "SISFENAS", "status": "Em análise", "assignee": "Wesley Aquiles", "summary": "[C01] Implementar modal de adesão ao Clube F", "created": "2026-06-01", "due": "2026-06-08"}, {"key": "FENASHUB-16", "project": "FENASHUB", "status": "Em análise", "assignee": "Wesley Aquiles", "summary": "Métricas do Dashboard", "created": "2026-02-10", "due": "2026-06-19"}, {"key": "FENASHUB-15", "project": "FENASHUB", "status": "Em análise", "assignee": "Wesley Aquiles", "summary": "Dashboard", "created": "2026-02-10", "due": "2026-06-19"}, {"key": "FENASBR-174", "project": "FENASBR", "status": "Em análise", "assignee": "Wesley Aquiles", "summary": "Substituir o envio do e-mail de boas-vindas da platafor", "created": "2026-06-02", "due": "2026-06-09"}, {"key": "FENASBR-173", "project": "FENASBR", "status": "Em análise", "assignee": "Wesley Aquiles", "summary": "[C03] Criar formulário de solicitação de acesso para us", "created": "2026-06-01", "due": "2026-06-09"}, {"key": "FENASBR-172", "project": "FENASBR", "status": "Em análise", "assignee": "Wesley Aquiles", "summary": "[C02] Bloquear ativação do Clube F e exibir fluxo de re", "created": "2026-06-01", "due": "2026-06-09"}, {"key": "FENASBR-171", "project": "FENASBR", "status": "Em análise", "assignee": "Wesley Aquiles", "summary": "[C02] Implementar validação de divergência de e-mail no", "created": "2026-06-01", "due": "2026-06-09"}, {"key": "FENASBR-170", "project": "FENASBR", "status": "Em análise", "assignee": "Wesley Aquiles", "summary": "[C01] Implementar modal de adesão e consumir API de ace", "created": "2026-06-01", "due": "2026-06-09"}, {"key": "FENASBR-169", "project": "FENASBR", "status": "Em análise", "assignee": "Wesley Aquiles", "summary": "[C01] Criar API de consulta e gravação de aceites do Cl", "created": "2026-06-01", "due": "2026-06-09"}, {"key": "FENASBR-168", "project": "FENASBR", "status": "Em análise", "assignee": "Wesley Aquiles", "summary": "[C01] Criar campos de aceite do Clube F no modelo de us", "created": "2026-06-01", "due": "2026-06-09"}, {"key": "FENASBR-167", "project": "FENASBR", "status": "Em análise", "assignee": "Wesley Aquiles", "summary": "Integração Clube F – Site Fenasbac.br", "created": "2026-06-01", "due": "2026-06-09"}, {"key": "FENASBR-164", "project": "FENASBR", "status": "Em análise", "assignee": "Matheus Douglas Alves Pinto", "summary": "[Clube F / MKT] Criar 4 banners promocionais por produt", "created": "2026-05-28", "due": "2026-06-08"}, {"key": "FENASBR-163", "project": "FENASBR", "status": "Em análise", "assignee": "Matheus Douglas Alves Pinto", "summary": "[Clube F / Área Logada] Criar e implementar banner CTA ", "created": "2026-05-28", "due": "2026-06-08"}, {"key": "FENASBR-162", "project": "FENASBR", "status": "Em análise", "assignee": "Matheus Douglas Alves Pinto", "summary": "[Clube F / Área Logada] Implementar lógica condicional ", "created": "2026-05-28", "due": "2026-06-08"}, {"key": "FENASBR-161", "project": "FENASBR", "status": "Em análise", "assignee": "Matheus Douglas Alves Pinto", "summary": "[Clube F / Área Logada] Implementar bloco \"Minha ASBAC\"", "created": "2026-05-28", "due": "2026-06-08"}, {"key": "FENASBR-160", "project": "FENASBR", "status": "Em análise", "assignee": "Matheus Douglas Alves Pinto", "summary": "[Clube F / Área Logada] Adicionar botão \"Meus Dados\" no", "created": "2026-05-28", "due": "2026-06-08"}, {"key": "FENASBR-157", "project": "FENASBR", "status": "Em análise", "assignee": "Matheus Douglas Alves Pinto", "summary": "[Clube F] Publicação em produção após aceite formal", "created": "2026-05-27", "due": "2026-06-08"}, {"key": "FENASBR-156", "project": "FENASBR", "status": "Em análise", "assignee": "Matheus Douglas Alves Pinto", "summary": "[Clube F] Validação funcional dos 3 fluxos em homologaç", "created": "2026-05-27", "due": "2026-06-08"}, {"key": "FENASBR-155", "project": "FENASBR", "status": "Em análise", "assignee": "Matheus Douglas Alves Pinto", "summary": "[Clube F] Implementar Banner Produtos FNB no subdomínio", "created": "2026-05-27", "due": "2026-06-08"}, {"key": "FENASBR-154", "project": "FENASBR", "status": "Em análise", "assignee": "Matheus Douglas Alves Pinto", "summary": "[Clube F] Implementar seção Promo Produtos FNB na área ", "created": "2026-05-27", "due": "2026-06-08"}, {"key": "FENASBR-152", "project": "FENASBR", "status": "Em análise", "assignee": "Matheus Douglas Alves Pinto", "summary": "[Clube F] Implementar fluxo de login e cadastro do Club", "created": "2026-05-27", "due": "2026-06-08"}, {"key": "SDESK-120", "project": "SDESK", "status": "Concluído", "assignee": "Lenita Martins", "summary": "Excluir cadastro teste", "created": "2026-05-15", "due": "2026-06-03"}, {"key": "SDESK-124", "project": "SDESK", "status": "Concluído", "assignee": "jorge", "summary": "Problema de scanner", "created": "2026-05-20", "due": "2026-05-20"}, {"key": "SDESK-129", "project": "SDESK", "status": "Concluído", "assignee": "Matheus Douglas Alves Pinto", "summary": "Atualização de copies — patrocínio eventos", "created": "2026-05-26", "due": "2026-06-01"}, {"key": "SDESK-134", "project": "SDESK", "status": "Concluído", "assignee": "jorge", "summary": "Atualização SISFENASBAC (hotfix produção)", "created": "2026-05-28", "due": "2026-06-01"}, {"key": "SDESK-136", "project": "SDESK", "status": "Concluído", "assignee": "Lenita Martins", "summary": "Inativar e-mail da Maria", "created": "2026-05-29", "due": "2026-06-05"}, {"key": "SDESK-137", "project": "SDESK", "status": "Concluído", "assignee": "Matheus Douglas Alves Pinto", "summary": "Trocar o formulário de contato", "created": "2026-05-29", "due": "2026-06-05"}, {"key": "SDESK-150", "project": "SDESK", "status": "Concluído", "assignee": "jorge", "summary": "Reset de senha ramal", "created": "2026-06-02", "due": "2026-06-02"}, {"key": "SDESK-151", "project": "SDESK", "status": "Concluído", "assignee": "jorge", "summary": "Ajuste mensagem telefone 0800", "created": "2026-06-02", "due": "2026-06-02"}, {"key": "SDESK-152", "project": "SDESK", "status": "Concluído", "assignee": "Lenita Martins", "summary": "Problema de impressão", "created": "2026-06-02", "due": "2026-06-03"}, {"key": "SDESK-141", "project": "SDESK", "status": "Em andamento", "assignee": "Lenita Martins", "summary": "Onboarding TI — novo colaborador", "created": "2026-06-02", "due": "2026-06-05"}, {"key": "SDESK-122", "project": "SDESK", "status": "Tarefas pendentes", "assignee": "jorge", "summary": "Solicitação de equipamento — fone ⚠18d", "created": "2026-05-18", "due": "2026-06-05"}, {"key": "SDESK-126", "project": "SDESK", "status": "Tarefas pendentes", "assignee": "Matheus Douglas Alves Pinto", "summary": "Refinamento formulário Fenasbac ID", "created": "2026-05-25", "due": "2026-06-05"}, {"key": "SDESK-128", "project": "SDESK", "status": "Tarefas pendentes", "assignee": "jorge", "summary": "Computador com lentidão ⚠10d", "created": "2026-05-26", "due": "2026-06-05"}, {"key": "SDESK-133", "project": "SDESK", "status": "Tarefas pendentes", "assignee": "jorge", "summary": "Instalação Office — financeiro", "created": "2026-05-27", "due": "2026-06-05"}, {"key": "SDESK-138", "project": "SDESK", "status": "Em andamento", "assignee": "jorge", "summary": "Convite guest users Microsoft Teams", "created": "2026-06-01", "due": "2026-06-05"}, {"key": "SDESK-139", "project": "SDESK", "status": "Em andamento", "assignee": "jorge", "summary": "Esqueci senha Nordpass", "created": "2026-06-01", "due": "2026-06-05"}, {"key": "SDESK-153", "project": "SDESK", "status": "Tarefas pendentes", "assignee": "Matheus Douglas Alves Pinto", "summary": "Trocar e-mail redirecionamento Clube F", "created": "2026-06-02", "due": "2026-06-05"}, {"key": "SDESK-154", "project": "SDESK", "status": "Tarefas pendentes", "assignee": "Lenita Martins", "summary": "Ajuste no arquivo Contratos", "created": "2026-06-03", "due": "2026-06-05"}, {"key": "SDESK-155", "project": "SDESK", "status": "Tarefas pendentes", "assignee": "Alân Domingues", "summary": "Documentos GEP para download PDF", "created": "2026-06-03", "due": "2026-06-05"}, {"key": "SDESK-156", "project": "SDESK", "status": "Tarefas pendentes", "assignee": "Matheus Douglas Alves Pinto", "summary": "Atualizar Política de Privacidade", "created": "2026-06-03", "due": "2026-06-05"}, {"key": "SDESK-157", "project": "SDESK", "status": "Tarefas pendentes", "assignee": "Lenita Martins", "summary": "Alteração módulo GEP — embed RD Station", "created": "2026-06-05", "due": "2026-06-07"}];
+
+const PROJ_ORDER = ['PROC','CONECTA','FENASBR','STRAPI','SISFENAS','FENASHUB','TECH','SDESK','TILT','SYNCOOP','SRR','S3F','FAUTH'];
+const PROJ_COLORS = {
+  'PROC':'#0225EB','CONECTA':'#2EA043','FENASBR':'#8957E5',
+  'STRAPI':'#D29922','SISFENAS':'#F85149','FENASHUB':'#02FFFF',
+  'TECH':'#484F58','SDESK':'#3B82F6','TILT':'#2EA043',
+  'SYNCOOP':'#2EA043','SRR':'#2EA043','S3F':'#2EA043','FAUTH':'#2EA043'
+};
+
+function showTab(t) {
+  const tabs = ['visao','sdesk','gantt','s12'];
+  document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('active', tabs[i]===t));
+  document.querySelectorAll('.panel').forEach((el,i) => el.classList.toggle('active', 'panel-'+tabs[i]==='panel-'+t));
+  if (t === 'gantt') setTimeout(scrollToToday, 100);
+}
+
+// ── DONUT ──
+(function(){
+  const c = document.getElementById('donut'); if(!c) return;
+  const ctx = c.getContext('2d');
+  const data=[42,7,24,27], colors=['#2EA043','#0225EB','#D29922','#484F58'];
+  const total=data.reduce((a,b)=>a+b,0);
+  let start=-Math.PI/2;
+  data.forEach((v,i)=>{
+    const angle=(v/total)*2*Math.PI;
+    ctx.beginPath();ctx.moveTo(75,75);ctx.arc(75,75,65,start,start+angle);
+    ctx.fillStyle=colors[i];ctx.fill();start+=angle;
+  });
+  ctx.beginPath();ctx.arc(75,75,38,0,2*Math.PI);ctx.fillStyle='#161B22';ctx.fill();
+  ctx.fillStyle='#02FFFF';ctx.font='bold 15px Exo 2';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('42%',75,75);
+})();
+
+// ── PROJECT CHARTS ──
+const projData = {};
+ISSUES.forEach(i=>{
+  if(!projData[i.project]) projData[i.project]={done:0,prog:0,rev:0,pend:0,total:0};
+  const p=projData[i.project];
+  p.total++;
+  if(i.status==='Concluído'||i.status==='Concluída') p.done++;
+  else if(i.status==='Em andamento') p.prog++;
+  else if(i.status==='Em análise') p.rev++;
+  else p.pend++;
+});
+
+const sc = document.getElementById('proj-chart');
+if(sc) {
+  PROJ_ORDER.filter(p=>projData[p]&&projData[p].total>0).forEach(proj=>{
+    const d=projData[proj], tot=d.total;
+    const row=document.createElement('div');row.className='stack-row';
+    const color=PROJ_COLORS[proj]||'#484F58';
+    row.innerHTML=`<div class="stack-label" style="color:${color};font-weight:600">${proj}</div>
+      <div class="stack-track">
+        ${d.done?`<div class="stack-seg" style="width:${d.done/tot*100}%;background:#2EA043" title="Concluído: ${d.done}">${d.done>2?d.done:''}</div>`:''}
+        ${d.prog?`<div class="stack-seg" style="width:${d.prog/tot*100}%;background:#0225EB" title="Em andamento: ${d.prog}">${d.prog>1?d.prog:''}</div>`:''}
+        ${d.rev?`<div class="stack-seg" style="width:${d.rev/tot*100}%;background:#D29922" title="Em análise: ${d.rev}">${d.rev>2?d.rev:''}</div>`:''}
+        ${d.pend?`<div class="stack-seg" style="width:${d.pend/tot*100}%;background:#484F58" title="Pendente: ${d.pend}">${d.pend>2?d.pend:''}</div>`:''}
+      </div><div class="bar-count">${tot}</div>`;
+    sc.appendChild(row);
+  });
+}
+
+const tc = document.getElementById('taxa-chart');
+if(tc) {
+  PROJ_ORDER.filter(p=>projData[p]&&projData[p].total>=2).forEach(proj=>{
+    const d=projData[proj], pct=Math.round(d.done/d.total*100);
+    const color=PROJ_COLORS[proj]||'#484F58';
+    const barColor=pct>=60?'#2EA043':pct>=40?'#D29922':'#F85149';
+    const row=document.createElement('div');row.className='stack-row';
+    row.innerHTML=`<div class="stack-label" style="color:${color};font-weight:600">${proj}</div>
+      <div class="stack-track"><div class="stack-seg" style="width:${pct}%;background:${barColor};min-width:20px">${pct}%</div></div>
+      <div class="bar-count">${d.done}/${d.total}</div>`;
+    tc.appendChild(row);
+  });
+}
+
+// ── GANTT ──
+const SPRINT_START=new Date('2026-05-25'), SPRINT_END=new Date('2026-06-05');
+const TODAY=new Date('2026-06-05'), DAY_W=24;
+function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
+function diffDays(a,b){return Math.round((b-a)/86400000);}
+function dateStr(d){return d.toISOString().slice(0,10);}
+const VIEW_START=addDays(SPRINT_START,-5), VIEW_END=addDays(SPRINT_END,12);
+const TOTAL_DAYS=diffDays(VIEW_START,VIEW_END)+1;
+
+let activeFilter='all';
+function setF(f,btn){
+  activeFilter=f;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilter();
+}
+function applyFilter(){
+  document.querySelectorAll('.g-row').forEach(row=>{
+    const p=row.dataset.project, s=row.dataset.status;
+    let show=true;
+    if(activeFilter==='all') show=true;
+    else if(activeFilter==='done') show=s==='Concluído'||s==='Concluída';
+    else if(activeFilter==='active') show=['Em andamento','Em análise'].includes(s);
+    else if(activeFilter==='carry') show=['Em andamento','Em análise','Tarefas pendentes'].includes(s);
+    else show=p===activeFilter;
+    row.classList.toggle('hidden',!show);
+  });
+}
+function scrollToToday(){
+  const w=document.getElementById('gantt-wrap');
+  if(w) w.scrollLeft=(diffDays(VIEW_START,TODAY)*DAY_W)-100-40;
+}
+
+function buildGantt(){
+  const container=document.getElementById('gantt-container'); if(!container) return;
+  const days=[];
+  for(let i=0;i<TOTAL_DAYS;i++){
+    const d=addDays(VIEW_START,i);
+    const dow=d.getDay();
+    days.push({date:d,ds:dateStr(d),wknd:dow===0||dow===6,
+      sprint:d>=SPRINT_START&&d<=SPRINT_END,today:dateStr(d)===dateStr(TODAY),n:d.getDate(),m:d.getMonth()});
+  }
+
+  // month header
+  const mRow=document.createElement('div');mRow.className='m-hdr';
+  const mlc=document.createElement('div');mlc.className='m-lbl-col';mRow.appendChild(mlc);
+  const months={};
+  days.forEach((d,i)=>{const k=d.date.getFullYear()+'-'+d.m;if(!months[k])months[k]={count:0,name:d.date.toLocaleString('pt-BR',{month:'short'}).toUpperCase()};months[k].count++;});
+  Object.values(months).forEach(m=>{const el=document.createElement('div');el.className='m-cell';el.style.width=(m.count*DAY_W)+'px';el.textContent=m.name;mRow.appendChild(el);});
+  container.appendChild(mRow);
+
+  // day header
+  const dHdr=document.createElement('div');dHdr.className='g-hdr';
+  const dlc=document.createElement('div');dlc.className='g-lbl-col';dlc.textContent='Projeto';dHdr.appendChild(dlc);
+  const daysDiv=document.createElement('div');daysDiv.className='g-days';
+  days.forEach(d=>{const el=document.createElement('div');el.className='d-cell'+(d.wknd?' wknd':'')+(d.today?' today':'');el.textContent=d.n;daysDiv.appendChild(el);});
+  dHdr.appendChild(daysDiv);container.appendChild(dHdr);
+
+  // group by PROJECT
+  const groups={};
+  PROJ_ORDER.forEach(p=>{ if(ISSUES.some(i=>i.project===p)) groups[p]=ISSUES.filter(i=>i.project===p); });
+
+  Object.entries(groups).forEach(([proj, items])=>{
+    const color=PROJ_COLORS[proj]||'#484F58';
+    const done=items.filter(i=>i.status==='Concluído'||i.status==='Concluída').length;
+
+    // group header
+    const gh=document.createElement('div');gh.className='grp-row';
+    const ghl=document.createElement('div');ghl.className='grp-lbl';
+    ghl.style.color=color;
+    ghl.innerHTML=`${proj}<span class="grp-stats">(${done}/${items.length})</span>`;
+    const ghtl=document.createElement('div');ghtl.style.flex='1';ghtl.style.height='22px';
+    // sprint bg on group header
+    days.forEach((d,i)=>{
+      if(d.sprint){const bg=document.createElement('div');bg.style.cssText=`position:absolute;top:0;bottom:0;left:${(100+i*DAY_W)}px;width:${DAY_W}px;background:rgba(2,37,235,.04)`;ghtl.style.position='relative';ghtl.appendChild(bg);}
+    });
+    gh.appendChild(ghl);gh.appendChild(ghtl);container.appendChild(gh);
+
+    items.forEach(issue=>{
+      const row=document.createElement('div');row.className='g-row';
+      row.dataset.project=issue.project;row.dataset.status=issue.status;
+
+      // label (just key)
+      const lbl=document.createElement('div');lbl.className='row-lbl';
+      const dot=issue.status==='Concluído'||issue.status==='Concluída'?'🟢':issue.status==='Em andamento'?'🔵':issue.status==='Em análise'?'🟡':'⚪';
+      lbl.innerHTML=`<span style="font-size:8px">${dot}</span><span class="rkey" title="${issue.summary}">${issue.key}</span>`;
+      row.appendChild(lbl);
+
+      // timeline
+      const tl=document.createElement('div');tl.className='row-tl';
+      tl.style.width=(TOTAL_DAYS*DAY_W)+'px';
+
+      days.forEach((d,i)=>{
+        if(d.wknd||d.sprint||d.today){
+          const bg=document.createElement('div');bg.className='dbg';
+          if(d.today)bg.className+=' today-col';
+          else if(d.sprint)bg.className+=' sprint';
+          else bg.className+=' wknd';
+          bg.style.left=(i*DAY_W)+'px';bg.style.width=DAY_W+'px';
+          tl.appendChild(bg);
+        }
+      });
+
+      // ref lines
+      const tl2=document.createElement('div');tl2.className='ref-line ref-today';
+      tl2.style.left=(diffDays(VIEW_START,TODAY)*DAY_W)+'px';tl.appendChild(tl2);
+      const sl=document.createElement('div');sl.className='ref-line ref-end';
+      sl.style.left=(diffDays(VIEW_START,SPRINT_END)*DAY_W)+'px';tl.appendChild(sl);
+
+      // bar
+      const start=issue.created?new Date(issue.created):SPRINT_START;
+      const end=issue.due&&issue.due>issue.created?new Date(issue.due):SPRINT_END;
+      const bs=Math.max(0,diffDays(VIEW_START,start));
+      const be=diffDays(VIEW_START,end);
+      const bw=Math.max(1,(be-bs+1))*DAY_W;
+      const bar=document.createElement('div');bar.className='bar';
+      const carry=['Em andamento','Em análise','Tarefas pendentes'].includes(issue.status)&&end>SPRINT_END;
+      if(carry)bar.className+=' carry';
+      else if(issue.status==='Concluído'||issue.status==='Concluída')bar.className+=' done';
+      else if(issue.status==='Em andamento')bar.className+=' prog';
+      else if(issue.status==='Em análise')bar.className+=' rev';
+      else bar.className+=' pend';
+      bar.style.left=(bs*DAY_W)+'px';bar.style.width=bw+'px';
+      bar.title=`${issue.key}: ${issue.summary} [${issue.status}]`;
+      tl.appendChild(bar);
+      row.appendChild(tl);container.appendChild(row);
+    });
+  });
+}
+
+buildGantt();
+</script>
+</body>
+</html>
