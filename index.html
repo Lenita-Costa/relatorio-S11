@@ -170,6 +170,50 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
 .g-tooltip{position:fixed;background:#21262D;border:1px solid #30363D;border-radius:6px;padding:8px 10px;font-size:10px;color:#E6EDF3;pointer-events:none;z-index:200;max-width:260px;display:none;line-height:1.5;box-shadow:0 4px 16px rgba(0,0,0,.5);}
 
 .footer{background:var(--dark);padding:10px 24px;font-size:10px;color:var(--muted);border-top:1px solid var(--bord);display:flex;justify-content:space-between;}
+
+/* ════════ RESPONSIVO / MOBILE ════════ */
+@media (max-width:768px){
+  /* HEADER */
+  .hdr{flex-wrap:wrap;gap:8px;padding:10px 14px;}
+  .hdr-title{font-size:15px;}
+  .hdr-sub{font-size:9px;line-height:1.5;}
+  .hdr-badge{align-self:flex-start;}
+  /* ALERT */
+  .alert-bar{padding:8px 14px;}
+  /* TABS — rolagem horizontal em vez de estourar */
+  .tabs{padding:0 8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{padding:10px 12px;font-size:12px;flex-shrink:0;}
+  /* KPIs */
+  .kpi-strip{padding:12px 14px;gap:8px;}
+  .kpi{padding:10px 12px;min-width:calc(33.333% - 6px);}
+  .kpi-val{font-size:20px;}
+  /* GRIDS de 2 colunas → 1 coluna */
+  .grid-2{grid-template-columns:1fr !important;padding-left:14px !important;padding-right:14px !important;}
+  .chart-row{flex-wrap:wrap;gap:16px !important;}
+  .status-row{flex-wrap:wrap;padding-left:14px !important;padding-right:14px !important;}
+  .status-row > div[style*="margin-left:auto"]{margin-left:0 !important;}
+  /* VIEWS */
+  .proj-view,.team-view{padding:0 14px 16px;}
+  .proj-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
+  .team-grid{grid-template-columns:1fr;}
+  .toolbar{padding:0 14px 10px;}
+  /* PAINEL DE DETALHE → largura total */
+  .detail-panel{width:100%;right:-100%;}
+  /* GANTT — colunas de rótulo mais estreitas */
+  .m-lbl-col,.g-lbl-col,.row-lbl,.grp-lbl{width:180px;min-width:180px;}
+  .task-lbl{width:180px;min-width:180px;}
+  .rkey,.task-key{width:auto;}
+  /* FOOTER */
+  .footer{flex-direction:column;gap:4px;padding:10px 14px;}
+}
+@media (max-width:480px){
+  body{font-size:12px;}
+  .kpi{min-width:calc(50% - 4px);}
+  .proj-grid{grid-template-columns:1fr 1fr;}
+  .m-lbl-col,.g-lbl-col,.row-lbl,.grp-lbl,.task-lbl{width:140px;min-width:140px;}
+  .hdr-badge{font-size:9px;}
+}
 </style>
 </head>
 <body>
@@ -209,7 +253,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
   <div class="kpi danger"><div class="kpi-val">27</div><div class="kpi-label">Pendentes</div></div>
   <div class="kpi ok"><div class="kpi-val">9</div><div class="kpi-label">SDesk ✓</div></div>
 </div>
-<div style="display:flex;gap:12px;padding:0 24px 16px;align-items:center;">
+<div class="status-row" style="display:flex;gap:12px;padding:0 24px 16px;align-items:center;">
   <div style="display:flex;align-items:center;gap:8px;background:rgba(2,37,235,.1);border:1px solid rgba(2,37,235,.3);border-radius:8px;padding:8px 14px;">
     <div style="width:8px;height:8px;border-radius:50%;background:#484F58;flex-shrink:0;"></div>
     <span style="font-size:11px;color:#8B949E;"><strong style="color:#E6EDF3;">S11 encerrada</strong> &nbsp;25/05 → 05/06/2026</span>
@@ -220,12 +264,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
   </div>
   <div style="font-size:11px;color:#484F58;margin-left:auto;">Todos os projetos abaixo estão ativos no ecossistema Fenasbac</div>
 </div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 24px 20px;">
+<div class="grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 24px 20px;">
 
   <!-- Donut -->
   <div style="background:var(--bg2);border:1px solid var(--bord);border-radius:8px;padding:16px;">
     <div style="font-size:12px;font-weight:600;color:var(--cyan);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;">Distribuição de Status (Sprint)</div>
-    <div style="display:flex;align-items:center;gap:24px;justify-content:center;">
+    <div class="chart-row" style="display:flex;align-items:center;gap:24px;justify-content:center;">
       <canvas id="donut" width="150" height="150"></canvas>
       <div style="display:flex;flex-direction:column;gap:10px;">
         <div style="display:flex;align-items:center;gap:8px;font-size:12px;"><div style="width:12px;height:12px;border-radius:2px;background:#2EA043;flex-shrink:0;"></div>Concluídos: <strong style="color:#E6EDF3;margin-left:4px;">42</strong><span style="color:var(--muted);margin-left:4px;">(42%)</span></div>
@@ -293,7 +337,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
   <div class="kpi danger"><div class="kpi-val">9</div><div class="kpi-label">Pendentes</div></div>
   <div class="kpi warn"><div class="kpi-val">2</div><div class="kpi-label">⚠ Fora SLA</div></div>
 </div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 24px 24px;">
+<div class="grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 24px 24px;">
   <div style="background:var(--bg2);border:1px solid var(--bord);border-radius:8px;padding:14px;">
     <div style="font-size:10px;font-weight:600;color:var(--cyan);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">✅ Resolvidos</div>
     <div id="sd-done"></div>
@@ -414,7 +458,7 @@ function buildProjects(){
 const MEMBERS=[
   {id:'Lenita Martins',role:'Coordenadora de TI',color:'#0225EB',initials:'LM'},
   {id:'Wesley Aquiles',role:'Desenvolvedor Full-stack',color:'#2EA043',initials:'WA'},
-  {id:'Alân Domingues',role:'Desenvolvedor / CMS',color:'#D29922',initials:'AD'},
+  {id:'Alân Domingues',role:'Líder Técnico',color:'#D29922',initials:'AD'},
   {id:'Matheus Douglas Alves Pinto',role:'Conteúdo / Front',color:'#8957E5',initials:'MD'},
   {id:'jorge',role:'Infraestrutura / Suporte',color:'#484F58',initials:'JO'},
 ];
