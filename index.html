@@ -15,7 +15,7 @@
   --day:22px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;overflow-x:hidden;}
 
 /* HEADER */
 .hdr{background:var(--dark);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--blue);}
@@ -112,6 +112,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
 
 /* GANTT */
 .gantt-wrap{overflow-x:auto;padding:0 24px 24px;}
+#gantt-container{width:max-content;min-width:100%;}
 .toolbar{display:flex;gap:6px;padding:0 24px 10px;flex-wrap:wrap;align-items:center;}
 .fbtn{background:var(--bg3);border:1px solid var(--bord);color:var(--muted);padding:4px 10px;border-radius:14px;cursor:pointer;font-size:11px;transition:all .15s;}
 .fbtn.active,.fbtn:hover{background:var(--blue);color:#fff;border-color:var(--blue);}
@@ -198,6 +199,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
   .proj-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
   .team-grid{grid-template-columns:1fr;}
   .toolbar{padding:0 14px 10px;}
+  .gantt-wrap{padding-left:14px;padding-right:14px;}
   /* PAINEL DE DETALHE → largura total */
   .detail-panel{width:100%;right:-100%;}
   /* GANTT — colunas de rótulo mais estreitas */
